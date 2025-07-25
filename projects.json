@@ -1,0 +1,25 @@
+{
+  "projects": [
+    {
+      "name": "Akashdeep Design Studio",
+      "start": "2025-07-09",
+      "deadline": "2025-09-15",
+      "status": "Logo Design Track",
+      "stage": "Conceptualization"
+    },
+    {
+      "name": "EcoPath",
+      "start": "2025-07-11",
+      "deadline": "2025-08-31",
+      "status": "Content Design Track",
+      "stage": "Landing Page Content"
+    },
+    {
+      "name": "House Of Shaarag",
+      "start": "2025-07-19",
+      "deadline": "2025-09-15",
+      "status": "Requirement Gathering",
+      "stage": "Research"
+    }
+  ]
+}

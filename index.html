@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Countdown Final</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Fonts + Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&family=Inter:wght@400..700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg-main: #f7f7fa;
+      --card-bg: rgba(255,255,255,0.65);
+      --font-main: 'Bitcount Prop Single', 'Inter', Arial, sans-serif;
+      --card-radius: 28px;
+      --status-inprogress: #e6f1fe;
+      --status-paused: #fffbe7;
+      --status-notstarted: #f2f7f9;
+      --status-completed: #e0fbee;
+      --stage-bg: #e6fcf3cd;
+      --stage-text: #04866a;
+      --status-inprogress-text: #2966b3;
+      --status-paused-text: #b79753;
+      --status-notstarted-text: #417481;
+      --status-completed-text: #15895b;
+      --accent: #09ffd5;
+      --high-contrast: #191d22;
+      --urgent: #e08100;
+      --overdue: #db0033;
+    }
+
+    html, body {
+      min-height:100%; margin:0; padding:0;
+      font-family:var(--font-main);
+      color:var(--high-contrast);
+      background: var(--bg-main);
+      box-sizing:border-box;
+      overflow-x:hidden;
+    }
+    body::before {
+      content:"";
+      position:fixed; inset:0; z-index:0;
+      background: linear-gradient(109deg,#f6faff 0%, #fffbf1 100%);
+      opacity:.90;
+      pointer-events: none;
+    }
+    #app { position:relative; z-index: 1;}
+
+    /* Home Page */
+    .home-title {
+      font-size: 2.1rem;
+      font-family: var(--font-main);
+      color: var(--accent);
+      text-align: center;
+      letter-spacing: .08em;
+      font-weight: 800;
+      margin: 4vh 0 2vh 0;
+      user-select: none;
+    }
+    .card-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2.3rem;
+      margin: 2vw auto 3vw auto;
+      padding: 0;
+      width: 100%;
+      max-width: 1280px;
+    }
+    .project-card {
+      background: var(--card-bg);
+      border-radius: var(--card-radius);
+      box-shadow: 0 8px 30px #dadceb1e, 0 2.5px 30px #8bf8fc0e;
+      border: 1.2px solid #e9eafad9;
+      padding: 2.2rem 2.3rem 1.3rem 2.3rem;
+      min-width: 285px; max-width: 350px; width:100%;
+      display: flex; flex-direction: column; align-items: flex-start; position: relative;
+      cursor: pointer;
+      margin: 0 1rem;
+      transition: box-shadow .14s, background .13s, transform .14s;
+    }
+    .project-card:focus, .project-card:hover {
+      background: rgba(255,255,255,0.80);
+      box-shadow: 0 20px 64px #c9faff28;
+      outline:2px solid #9df6ff44;
+      transform:translateY(-2px) scale(1.012);
+    }
+    .card-title {
+      font-size:1.22rem;
+      font-weight:700;
+      color:#27b4cd;
+      margin-bottom:8px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .card-status { font-size:.98em;font-weight:600;border-radius:10px;padding: 6px 13px;margin-bottom:13px;box-shadow: 0 2px 5px rgba(100, 100, 100, 0.09);display:inline-block;}
+    .card-days { font-size:2.8rem; font-weight:800; color:var(--high-contrast); margin-bottom:2px;}
+    .card-days.urgent { color: var(--urgent);}
+    .card-days.overdue { color: var(--overdue);}
+    .card-stage {font-weight:600;margin-top:11px;margin-bottom:4px;font-size:1em;background: var(--stage-bg);color: var(--stage-text);border-radius:8px;padding:3px 13px;display:inline-block;}
+    .card-dates { font-size:.91em; color:#354048; font-weight:400; margin-top:5px;margin-bottom: -7.5px; letter-spacing:0.02em;}
+    .status-inprogress { background:var(--status-inprogress); color: var(--status-inprogress-text);}
+    .status-paused { background:var(--status-paused); color:var(--status-paused-text);}
+    .status-notstarted { background:var(--status-notstarted); color:var(--status-notstarted-text);}
+    .status-completed { background: var(--status-completed); color:var(--status-completed-text);}
+    @media(max-width:850px){ .card-grid {gap:1.1rem; flex-direction:column; align-items:center;} .project-card {width:96vw; margin:0.1rem 3vw;}}
+    @media(max-width:490px){ .project-card { width:97vw; padding:1.1rem .7rem .8rem 1.5rem;}}
+    @media(max-width:410px){ .project-card { width:80vw; margin: 3vw 2vw;}}
+
+    /* -------- Details page (no card, just centered, only gradient bg identical to home) ---- */
+    #detail-bg-anim { display: none; }
+
+    .details-outer {
+      min-height:100dvh; width:100vw;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background: transparent;
+      position:fixed; inset:0; z-index:1;
+      pointer-events:auto;
+    }
+    .details-content {
+      width:100vw;min-height:100vh;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      background:transparent;
+      position:relative;z-index:10;overflow:hidden;
+      user-select: text;
+      padding:0 2vw;
+    }
+    .details-title { font-size:2.1rem; color:var(--high-contrast); font-weight:800;text-align:center;margin-bottom: 18px;letter-spacing: 0.04em;}
+    .details-days {
+      font-size: clamp(6.8rem, 20vw, 13.5rem);
+      font-weight:990;
+      color: var(--high-contrast);
+      letter-spacing: 0.13em;
+      text-align: center;
+      margin-bottom: 19px;
+      margin-top:10px;
+      font-family: var(--font-main);
+      text-shadow: 0 4px 24px #fff,0 1.5px 6px #81dfdf16;
+      user-select: all;
+      background: rgba(255,255,255,0.07);
+      border-radius:2.5vw;
+      box-shadow:0 1.5px 22px #fff2;
+      transition: color .26s;
+    }
+    .details-days.urgent { color: var(--urgent);}
+    .details-days.overdue { color:var(--overdue);}
+    .details-dates {
+      font-size: 1.12rem; color: var(--high-contrast); font-weight: 560;
+      text-align: center; margin: 8px 0 0.55em 0;
+      letter-spacing: 0.023em; font-family: var(--font-main); display:block;
+      transition: color .26s;
+    }
+    .details-dates.urgent { color: var(--urgent);}
+    .details-dates.overdue { color: var(--overdue); font-weight: 700;}
+    .details-status, .details-stage {
+      display:inline-block; font-size:1.08rem; font-weight:650;
+      border-radius:12px; padding:7px 18px; margin: 20px 8px 8px 8px;
+      vertical-align:middle; transition: background .21s, color .21s;
+    }
+    .details-status-inprogress { background:var(--status-inprogress); color:var(--status-inprogress-text);}
+    .details-status-paused    { background:var(--status-paused);    color:var(--status-paused-text);}
+    .details-status-notstarted{ background:var(--status-notstarted);color:var(--status-notstarted-text);}
+    .details-status-completed { background:var(--status-completed); color:var(--status-completed-text);}
+    .details-stage { background: var(--stage-bg); color: var(--stage-text);}
+    @media(max-width:630px){
+      .details-content {padding:0 4vw;}
+      .details-title{ font-size:1.18rem;}
+      .details-days{ font-size:clamp(4.6rem,29vw,9.8rem);}
+      .details-status, .details-stage {font-size:.99rem;}
+    }
+  </style>
+</head>
+<body>
+  <div id="detail-bg-anim" style="display:none"></div>
+  <div id="app"></div>
+  <script>
+    const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    function formatDateReadable(dtstr){
+      if(!dtstr) return '';
+      const dt = new Date(dtstr);
+      if(isNaN(dt.getTime())) return dtstr;
+      return `${MONTHS[dt.getMonth()]} ${dt.getDate()}, ${dt.getFullYear()}`;
+    }
+    let PROJECTS = [];
+    function zeroPad(n){return n<10?'0'+n:n;}
+    function daysRemaining(startStr, endStr){
+      const now=new Date(), start=new Date(startStr), end=new Date(endStr);
+      const left=Math.ceil((end-now)/86400000), isOverdue=left<0,
+            isUrgent=!isOverdue && left<=7;
+      let percent=((now-start)/(end-start));
+      percent=Math.min(1,Math.max(0,percent));
+      return {left,isOverdue,isUrgent,percent:isFinite(percent)?percent:1};
+    }
+    function statusClass(stat){
+      if(!stat) return "";
+      stat=stat.toLowerCase();
+      if(stat.includes("progress")) return "status-inprogress details-status-inprogress";
+      if(stat.includes("pause")) return "status-paused details-status-paused";
+      if(stat.includes("not")) return "status-notstarted details-status-notstarted";
+      if(stat.includes("complete")||stat.includes("done")) return "status-completed details-status-completed";
+      return "";
+    }
+    function renderRoute(){
+      if(window.location.hash.startsWith('#project-')){
+        const idx=parseInt(window.location.hash.replace('#project-',''),10);
+        if(!isNaN(idx) && PROJECTS[idx]) return renderProject(idx);
+      }
+      renderHome();
+    }
+    function renderHome(){
+      document.getElementById('detail-bg-anim').style.display='none';
+      const el = document.createElement("div");
+      el.innerHTML = `
+        <div class="home-title">PROJECT COUNTDOWN</div>
+        <div class="card-grid">
+          ${PROJECTS.map((p,i)=>{
+            const {left,isOverdue,isUrgent} = daysRemaining(p.start,p.deadline);
+            return `
+              <div class="project-card" tabindex="0" data-idx="${i}" title="Open details for ${p.name}">
+                <div class="card-title">${p.name}</div>
+                <div class="card-status ${statusClass(p.status)}">${p.status||''}</div>
+                <div class="card-days${isOverdue?' overdue':''}${isUrgent&&!isOverdue?' urgent':''}">${left}</div>
+                <div class="card-stage">${p.stage||''}</div>
+                <div class="card-dates">
+                  <span>Start: ${formatDateReadable(p.start)}</span>
+                  <span style="display:block;margin-top:2px">Deadline: ${formatDateReadable(p.deadline)}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        <div style="text-align:center;opacity:.62;font-size:.97em;margin:2.7vw 0 1.5em 0;color:#6c9681;font-family:monospace;">
+          Edit <b>projects.json</b> to add/modify projects.
+        </div>`;
+      const app = document.getElementById('app'); app.innerHTML = ""; app.appendChild(el);
+      Array.from(app.querySelectorAll('.project-card')).forEach(card=>{
+        card.onclick = () => location.hash='#project-'+card.dataset.idx;
+        card.onpointerdown = () => card.style.transform="scale(.98)";
+        card.onpointerup = card.onblur =()=>card.style.transform="";
+      });
+    }
+    function renderProject(idx){
+      const {start, deadline, name, stage, status} = PROJECTS[idx];
+      const {left, isOverdue, isUrgent} = daysRemaining(start,deadline);
+      // Details BG: just like home, static.
+      document.getElementById('detail-bg-anim').style.display = 'none';
+      const app = document.getElementById('app');
+      // Set urgency classes for number and deadline
+      const daysClass = isOverdue ? "details-days overdue" : isUrgent ? "details-days urgent" : "details-days";
+      const deadlineClass = isOverdue ? "details-dates overdue" : isUrgent ? "details-dates urgent" : "details-dates";
+      app.innerHTML = `
+        <div class="details-outer">
+          <div class="details-content">
+            <div class="details-title">${name}</div>
+            <div class="details-dates">Start: ${formatDateReadable(start)}</div>
+            <div class="${daysClass}">${left}</div>
+            <div class="${deadlineClass}">Deadline: ${formatDateReadable(deadline)}</div>
+            <span class="details-stage">${stage}</span>
+            <span class="details-status ${statusClass(status)}">${status}</span>
+          </div>
+        </div>`;
+    }
+    fetch('projects.json').then(r=>r.json()).then(d=>{
+      PROJECTS = d.projects; renderRoute();
+    }).catch(e=>{
+      document.getElementById('app').innerHTML = `<div style="background:#fff8ee;border-radius:12px;padding:1.7em .9em;font-size:1.01em;color:#a57b5c;box-shadow:0 4px 18px #eee7;">
+        ⚠️ Unable to load <b>projects.json</b><br><pre style="font-size:.95em;color:#ba2e0f;">${e}</pre>
+      </div>`;
+    });
+    window.addEventListener('hashchange', renderRoute);
+    window.addEventListener('DOMContentLoaded',renderRoute);
+    window.addEventListener('popstate', renderRoute);
+  </script>
+</body>
+</html>
